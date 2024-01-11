@@ -1,13 +1,18 @@
-#Works much better + you can avoid compiling two different files, here's the code:
-
-
 import cv2 
 import numpy as np
+
 
 #define
 
 
+
+
+
 def Transform4(image , lines):
+    if lines is None:
+        return None
+
+
     yellow_lane = []
     white_lane = []
     yellow_lane_averaged = None
@@ -32,7 +37,7 @@ def Transform4(image , lines):
       slope , intercept = average1
 
       y1 = image.shape[0]
-      y2 = int(y1*0.7)
+      y2 = int(y1*0.6)
       x1 = int((y1 - intercept)/slope)
       x2 = int((y2-intercept)/slope)
 
@@ -48,7 +53,7 @@ def Transform4(image , lines):
        slope2 , intercept2 = average2
 
        y11 = image.shape[0]
-       y22 = int(y11*0.7)
+       y22 = int(y11*0.6)
        x11 = int((y11 - intercept2)/slope2)
        x22 = int((y22-intercept2)/slope2)
 
@@ -74,8 +79,10 @@ def Transform3 (image , lines):
 
     if lines is not None:
         for line in lines:
-            x1 , y1 , x2 , y2 = line.reshape(4)
-            cv2.line(blank_line, (x1,y1) , (x2 , y2) , (0, 0 , 255) , 20)
+            if line is not None and len(line) > 1:
+
+              x1 , y1 , x2 , y2 = line
+              cv2.line(blank_line, (x1,y1) , (x2 , y2) , (255, 0 , 0) , 20)
      
     return blank_line
 
@@ -114,7 +121,7 @@ def Transform(image):
 
 
 
-Video_Given = cv2.VideoCapture('/Users/dazaiosamu/Downloads/Video1.mp4')
+Video_Given = cv2.VideoCapture('/Users/dazaiosamu/Downloads/Video2.mp4')
 
 
 while True:
@@ -135,17 +142,20 @@ while True:
     # Line_image = Transform3(resized , lines)
 
     #optimization to show better lines (thanks aditya bhaiya for hinting this kewk)
-    
-    optipmized_line = Transform4(resized , lines)
+    if lines is not None:
+      optipmized_line = Transform4(resized , lines)
 
-    Line_image = Transform3(resized , optipmized_line)
+      Line_image = Transform3(resized , optipmized_line)
 
-    final = cv2.addWeighted(Line_image , 0.7 , resized , 1 , 1)
+      final = cv2.addWeighted(Line_image , 1 , resized , 0.9 , 1)
 
-    cv2.imshow('output' , final)
-    if(cv2.waitKey(10) == ord('e')):
-        break
-
+      cv2.imshow('output' , final)
+      if(cv2.waitKey(10) == ord('e')):
+         break
+    else:
+      cv2.imshow('output' , resized)
+      if(cv2.waitKey(10) == ord('e')):
+         break  
 
 cv2.waitKey()
 cv2.destroyAllWindows()
